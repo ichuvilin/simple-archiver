@@ -21,6 +21,24 @@ func (sa *SimpleArchiver) compressEmpty(data []byte) []byte {
 	return data
 }
 
-func main() {
+func (sa *SimpleArchiver) countRepeating(data []byte) []byte {
+	l := 0
+	r := 0
+	result := make([]byte, 0)
 
+	for r < len(data) {
+		if data[l] != data[r] {
+			result = append(result, byte(r-l))
+			result = append(result, data[l])
+			l = r
+		}
+		r += 1
+	}
+	result = append(result, byte(len(data)-l))
+	result = append(result, data[l])
+
+	return result
+}
+
+func main() {
 }
