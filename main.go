@@ -397,8 +397,12 @@ func (m model) viewInput() string {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if m.state == "menu" {
+		switch m.state {
+		case "menu":
 			return m.updateMenu(msg)
+
+		case "compress", "decompress":
+			return m.updateInput(msg)
 		}
 	}
 
@@ -423,6 +427,35 @@ func (m model) viewMenu() string {
 	b.WriteString("\n↑/↓ — навигация • Enter — выбрать • q — выход\n")
 
 	return b.String()
+}
+
+func (m model) updateInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c":
+		return m, tea.Quit
+
+	case "esc":
+		m.inputPath = ""
+		m.err = nil
+		m.state = "menu"
+
+	case "enter":
+		if m.inputPath == "" {
+			return m, nil
+		}
+
+	case "backspace":
+		if len(m.inputPath) > 0 {
+			m.inputPath = m.inputPath[:len(m.inputPath)-1]
+		}
+
+	default:
+		if len(msg.Runes) == 1 {
+			m.inputPath += string(msg.Runes[0])
+		}
+	}
+
+	return m, nil
 }
 
 func (m model) View() string {
