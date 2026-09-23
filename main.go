@@ -110,5 +110,49 @@ func countRepeating(data []byte, start int) int {
 	return count
 }
 
+func (sa *SimpleArchiver) compress(data []byte) []byte {
+	data = sa.compressEmpty(data)
+
+	result := make([]byte, 0)
+
+	for i := 0; i < len(data); {
+		count := countRepeating(data, i)
+
+		// Сжимаем последовательность из 4+ одинаковых байт.
+		if count >= 4 {
+			result = append(
+				result,
+				sa.createControlByte(count, true),
+			)
+			result = append(result, data[i])
+
+			i += count
+			continue
+		}
+
+		start := i
+		length := 0
+
+		for i < len(data) && length < 127 {
+			count = countRepeating(data, i)
+
+			if count >= 3 && length > 0 {
+				break
+			}
+
+			i++
+			length++
+		}
+
+		result = append(
+			result,
+			sa.createControlByte(length, false),
+		)
+		result = append(result, data[start:i]...)
+	}
+
+	return result
+}
+
 func main() {
 }
