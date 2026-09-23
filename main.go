@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+)
 
 type SimpleArchiver struct {
 	inputPath  string
@@ -192,4 +195,25 @@ func (sa *SimpleArchiver) decompress(data []byte) []byte {
 }
 
 func main() {
+	archiver := SimpleArchiver{}
+
+	tests := [][]byte{
+		{},
+		{'A'},
+		{'A', 'B', 'C'},
+		{'A', 'A', 'A', 'A'},
+		{'A', 'A', 'A', 'A', 'B', 'C'},
+	}
+
+	for _, data := range tests {
+		compressed := archiver.compress(data)
+		decompressed := archiver.decompress(compressed)
+
+		if !bytes.Equal(data, decompressed) {
+			fmt.Printf("original=%v, result=%v\n", data, decompressed)
+			continue
+		}
+
+		fmt.Printf("%v\n", data)
+	}
 }
