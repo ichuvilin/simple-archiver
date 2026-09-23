@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -210,6 +212,7 @@ func (sa *SimpleArchiver) CompressFile(inputPath, outputPath string) error {
 	}
 	defer output.Close()
 
+	reader := bufio.NewReader(input)
 	writer := bufio.NewWriter(output)
 	defer writer.Flush()
 
@@ -220,9 +223,40 @@ func (sa *SimpleArchiver) CompressFile(inputPath, outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("error during write byte: %w", err)
 	}
+
 	_, err = writer.Write(filenameBytes)
 	if err != nil {
 		return fmt.Errorf("error during write: %w", err)
+	}
+
+	for {
+		n, err := reader.Read(sa.buffer)
+
+		if n > 0 {
+			compressed := sa.compress(sa.buffer[:n])
+			blockSize := uint16(len(compressed))
+
+			if err = writer.WriteByte(byte(blockSize >> 8)); err != nil {
+				return fmt.Errorf("error during write block: %w", err)
+			}
+
+			if err = writer.WriteByte(byte(blockSize)); err != nil {
+				return fmt.Errorf("error during write block: %w", err)
+			}
+
+			_, err = writer.Write(compressed)
+			if err != nil {
+				return fmt.Errorf("error during write compressed: %w", err)
+			}
+		}
+
+		if errors.Is(err, io.EOF) {
+			break
+		}
+
+		if err != nil {
+			return fmt.Errorf("error during read: %w", err)
+		}
 	}
 
 	return nil
