@@ -372,6 +372,28 @@ func (m model) updateMenu(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m model) viewInput() string {
+	var b strings.Builder
+
+	if m.state == "compress" {
+		b.WriteString("Сжатие файла\n\n")
+		b.WriteString("Введите путь к файлу для сжатия:\n")
+	} else {
+		b.WriteString("Распаковка файла\n\n")
+		b.WriteString("Введите путь к файлу для распаковки:\n")
+	}
+
+	fmt.Fprintf(&b, "%s_\n", m.inputPath)
+
+	if m.err != nil {
+		fmt.Fprintf(&b, "\nОшибка: %s\n", m.err)
+	}
+
+	b.WriteString("\nEnter — подтвердить • Esc — назад в меню\n")
+
+	return b.String()
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -407,6 +429,10 @@ func (m model) View() string {
 	switch m.state {
 	case "menu":
 		return m.viewMenu()
+
+	case "compress", "decompress":
+		return m.viewInput()
+
 	default:
 		return ""
 	}
