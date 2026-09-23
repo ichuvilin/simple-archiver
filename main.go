@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type SimpleArchiver struct {
 	inputPath  string
 	outputPath string
@@ -152,6 +154,25 @@ func (sa *SimpleArchiver) compress(data []byte) []byte {
 	}
 
 	return result
+}
+
+func (sa *SimpleArchiver) decompress(data []byte) []byte {
+	data = sa.compressEmpty(data)
+
+	i := 0
+
+	for i < len(data) {
+		control := data[i]
+		i++
+
+		fmt.Printf(
+			"Управляющий байт: 0x%02X (%08b)\n",
+			control,
+			control,
+		)
+	}
+
+	return []byte{}
 }
 
 func main() {
