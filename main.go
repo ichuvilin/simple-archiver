@@ -277,7 +277,6 @@ func (sa *SimpleArchiver) DecompressFile(inputPath, outputDir string) error {
 	}
 
 	filenameBytes := make([]byte, int(nameLength))
-
 	_, err = io.ReadFull(reader, filenameBytes)
 	if err != nil {
 		return fmt.Errorf("read filename: %w", err)
@@ -294,6 +293,37 @@ func (sa *SimpleArchiver) DecompressFile(inputPath, outputDir string) error {
 
 	writer := bufio.NewWriter(output)
 	defer writer.Flush()
+
+	for {
+		high, err := reader.ReadByte()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("read block size: %w", err)
+		}
+
+		low, err := reader.ReadByte()
+		if err != nil {
+			return fmt.Errorf("read block size: %w", err)
+		}
+
+		blockSize := uint16(high)<<8 | uint16(low)
+
+		compressed := make([]byte, blockSize)
+
+		_, err = io.ReadFull(reader, compressed)
+		if err != nil {
+			return fmt.Errorf("read compressed block: %w", err)
+		}
+
+		decompressed := sa.decompress(compressed)
+
+		_, err = writer.Write(decompressed)
+		if err != nil {
+			return fmt.Errorf("write decompressed block: %w", err)
+		}
+	}
 
 	return nil
 }
