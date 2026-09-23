@@ -165,11 +165,16 @@ func (sa *SimpleArchiver) decompress(data []byte) []byte {
 		control := data[i]
 		i++
 
-		fmt.Printf(
-			"Управляющий байт: 0x%02X (%08b)\n",
-			control,
-			control,
-		)
+		isCompressed := control&0x80 != 0
+		length := int(control & 0x7F)
+
+		fmt.Printf("Управляющий байт: 0x%02X\n", control)
+
+		if isCompressed {
+			fmt.Printf("  Тип: сжатая, длина: %d\n\n", length)
+		} else {
+			fmt.Printf("  Тип: несжатая, длина: %d\n\n", length)
+		}
 	}
 
 	return []byte{}
