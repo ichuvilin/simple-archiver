@@ -262,6 +262,42 @@ func (sa *SimpleArchiver) CompressFile(inputPath, outputPath string) error {
 	return nil
 }
 
+func (sa *SimpleArchiver) DecompressFile(inputPath, outputDir string) error {
+	input, err := os.Open(inputPath)
+	if err != nil {
+		return fmt.Errorf("open archive: %w", err)
+	}
+	defer input.Close()
+
+	reader := bufio.NewReader(input)
+
+	nameLength, err := reader.ReadByte()
+	if err != nil {
+		return fmt.Errorf("read filename length: %w", err)
+	}
+
+	filenameBytes := make([]byte, int(nameLength))
+
+	_, err = io.ReadFull(reader, filenameBytes)
+	if err != nil {
+		return fmt.Errorf("read filename: %w", err)
+	}
+
+	filename := string(filenameBytes)
+	outputPath := filepath.Join(outputDir, filename)
+
+	output, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("create output file: %w", err)
+	}
+	defer output.Close()
+
+	writer := bufio.NewWriter(output)
+	defer writer.Flush()
+
+	return nil
+}
+
 func main() {
 	archiver := SimpleArchiver{}
 
