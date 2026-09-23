@@ -2,18 +2,28 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type SimpleArchiver struct {
 	inputPath  string
 	outputPath string
 	buffer     []byte
+}
+
+type model struct {
+	archiver  *SimpleArchiver
+	state     string
+	inputPath string
+	choices   []string
+	cursor    int
+	err       error
 }
 
 func NewArchiver(inputPath string) *SimpleArchiver {
@@ -328,26 +338,35 @@ func (sa *SimpleArchiver) DecompressFile(inputPath, outputDir string) error {
 	return nil
 }
 
-func main() {
-	archiver := SimpleArchiver{}
+func (m model) Init() tea.Cmd {
+	return nil
+}
 
-	tests := [][]byte{
-		{},
-		{'A'},
-		{'A', 'B', 'C'},
-		{'A', 'A', 'A', 'A'},
-		{'A', 'A', 'A', 'A', 'B', 'C'},
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	return nil, nil
+}
+
+func (m model) View() string {
+	return ""
+}
+
+func initialModel() model {
+	return model{
+		archiver: NewArchiver("aadad"),
+		state:    "menu",
+		choices: []string{
+			"Сжать файл",
+			"Распаковать файл",
+			"Выход",
+		},
 	}
+}
 
-	for _, data := range tests {
-		compressed := archiver.compress(data)
-		decompressed := archiver.decompress(compressed)
+func main() {
+	p := tea.NewProgram(initialModel())
 
-		if !bytes.Equal(data, decompressed) {
-			fmt.Printf("original=%v, result=%v\n", data, decompressed)
-			continue
-		}
-
-		fmt.Printf("%v\n", data)
+	if _, err := p.Run(); err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
 	}
 }
