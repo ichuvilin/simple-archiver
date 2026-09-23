@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -343,11 +344,36 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	return nil, nil
+	return m, nil
+}
+
+func (m model) viewMenu() string {
+	var b strings.Builder
+
+	b.WriteString("Простой архиватор\n\n")
+
+	for i, choice := range m.choices {
+		cursor := " "
+
+		if m.cursor == i {
+			cursor = ">"
+		}
+
+		fmt.Fprintf(&b, "%s %s\n", cursor, choice)
+	}
+
+	b.WriteString("\n↑/↓ — навигация • Enter — выбрать • q — выход\n")
+
+	return b.String()
 }
 
 func (m model) View() string {
-	return ""
+	switch m.state {
+	case "menu":
+		return m.viewMenu()
+	default:
+		return ""
+	}
 }
 
 func initialModel() model {
