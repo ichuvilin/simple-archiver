@@ -183,6 +183,8 @@ func (sa *SimpleArchiver) decompress(data []byte) []byte {
 			}
 		} else {
 			fmt.Printf("  Тип: несжатая, длина: %d\n\n", length)
+			result = append(result, data[i:i+length]...)
+			i += length
 		}
 	}
 
