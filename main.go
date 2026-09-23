@@ -13,9 +13,8 @@ import (
 )
 
 type SimpleArchiver struct {
-	inputPath  string
-	outputPath string
-	buffer     []byte
+	inputPath string
+	buffer    []byte
 }
 
 type model struct {
@@ -492,8 +491,7 @@ func (m model) View() string {
 
 func initialModel() model {
 	return model{
-		archiver: NewArchiver("aadad"),
-		state:    "menu",
+		state: "menu",
 		choices: []string{
 			"Сжать файл",
 			"Распаковать файл",
